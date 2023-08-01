@@ -1,11 +1,13 @@
 # basic-counter
-Counter12 is a web application that allows users to interact with a smart contract deployed on any Ethereum Virtual Machine (EVM)-compatible blockchain network. The project consists of a Solidity smart contract called "Counter12," a frontend website, and JavaScript code to facilitate communication with the contract.
 
-Features:
+Counter is a simple decentralized application (DApp) built on the Ethereum blockchain that allows users to increase a counter by paying a certain amount of native EVM currency (ETH/FTM/Matic...) (in wei) for each increment. The project showcases the interaction between a web application and a smart contract on any EVM compatible network using Web3.js. Users can connect their wallets to the DApp using MetaMask and increase the counter by paying 0.01 native network token for each increment.
 
-    Increment Count: Users can increase the count stored in the smart contract by paying 0.01 Matic (or the equivalent token on other EVM-compatible chains) for each increment. The website provides an input field where users can specify the number of increments they want to perform.
+Features
 
-    Fund Withdrawal: The contract owner can withdraw the funds accumulated from user payments for count increments using a secure function in the smart contract.
+    Increment Counter: Users can increase the counter by paying 0.01 Matic for each increment.
+    MetaMask Integration: The web application integrates with MetaMask, enabling users to connect their Ethereum wallets and sign transactions securely.
+    Automatic Count Update: The count is automatically fetched from the smart contract every 5 seconds, ensuring users see the most up-to-date count.
+    Connected Wallet Info: The website displays the connected wallet address and the number of times the connected wallet has incremented the counter.
 
 Technology Stack:
 
