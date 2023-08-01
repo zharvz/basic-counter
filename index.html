@@ -6,9 +6,14 @@
 </head>
 <body>
     <h1>Count: <span id="count">0</span></h1>
+    <div id="walletInfo">
+        <p>Connected Wallet Address: <span id="walletAddress">Not Connected</span></p>
+        <p>Number of Increments: <span id="numIncrements">0</span></p>
+    </div>
+    <button id="connectButton">Connect Wallet</button>
     <input type="number" id="incrementInput" placeholder="Enter the number of increments">
     <button id="increaseButton">Increase Count</button>
-    <button id="withdrawButton">Withdraw Funds</button>
+    <button id="updateCountButton">Update Count</button>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
     <script src="app.js"></script>
