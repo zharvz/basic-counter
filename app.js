@@ -3,129 +3,180 @@ const ABI = [
 	// PLACE ABI HERE
 ];
 
-const web3 = new Web3(window.ethereum);
-const counterContract = new web3.eth.Contract(ABI, contractAddress);
+const connectButton = document.getElementById('connectButton');
+const disconnectButton = document.getElementById('disconnectButton');
+const increaseButton = document.getElementById('increaseButton');
+const incrementInput = document.getElementById('incrementInput');
+const topWalletsList = document.getElementById('topWallets');
+const connectedWalletElement = document.getElementById('connectedWallet');
+const currentCountElement = document.getElementById('currentCount');
+const refreshCountButton = document.getElementById('refreshCountButton');
 
-let connectedWalletAddress = localStorage.getItem('connectedWallet') || 'Not Connected';
-let incrementData = JSON.parse(localStorage.getItem('incrementData')) || {};
-let currentCount = 0;
+refreshCountButton.addEventListener('click', updateCurrentCount);
+connectButton.addEventListener('click', connectWallet);
+disconnectButton.addEventListener('click', disconnectWallet);
+increaseButton.addEventListener('click', increaseCount);
 
+let connectedWalletAddress = null;
+let web3 = null;
+let counterContract = null;
+
+// Initialize the counterContract instance
+if (window.ethereum) {
+    web3 = new Web3(window.ethereum);
+    counterContract = new web3.eth.Contract(ABI, contractAddress);
+}
+
+// Update top wallets ranking
+async function updateTopWallets() {
+    try {
+        const numUniqueWallets = await counterContract.methods.getNumUniqueWallets().call();
+        const topWalletCount = numUniqueWallets;
+        
+        const result = await counterContract.methods.getTopWalletsInfo(topWalletCount).call();
+        const topWallets = result[0];
+        const topCounts = result[1];
+
+        // Sort the topWallets and topCounts arrays based on the count in descending order
+        const walletsData = [];
+        for (let i = 0; i < topWallets.length; i++) {
+            walletsData.push({ wallet: topWallets[i], count: topCounts[i] });
+        }
+
+        walletsData.sort((a, b) => b.count - a.count);
+
+        // Clear the existing list
+        topWalletsList.innerHTML = '';
+
+        // Populate the sorted list
+        for (let i = 0; i < walletsData.length; i++) {
+            const listItem = document.createElement('li');
+            listItem.textContent = `Wallet: ${walletsData[i].wallet}, Count: ${walletsData[i].count}`;
+            topWalletsList.appendChild(listItem);
+        }
+    } catch (error) {
+        console.error('Error updating top wallets:', error);
+    }
+}
+
+
+// Connect the wallet
 async function connectWallet() {
     try {
-        await window.ethereum.enable();
-        const accounts = await web3.eth.getAccounts();
-        const account = accounts[0];
-        connectedWalletAddress = account;
-        localStorage.setItem('connectedWallet', connectedWalletAddress);
-        await updateIncrementData();
-        await fetchCurrentCount(); // Fetch the current count from the smart contract
-        updateCountDisplay();
-        updateWalletInfo();
+        if (window.ethereum) {
+            web3 = new Web3(window.ethereum);
+            await window.ethereum.enable();
+            const accounts = await web3.eth.getAccounts();
+            connectedWalletAddress = accounts[0];
+            counterContract = new web3.eth.Contract(ABI, contractAddress);
+            updateConnectedWalletInfo(); // Update the connected wallet information
+            updateTopWallets(); // Update the top wallets ranking
+            updateWalletInfo(); // Update the wallet information
+        } else {
+            console.error('Ethereum provider not detected');
+        }
     } catch (error) {
         console.error('Error connecting wallet:', error);
     }
 }
 
+
+
+// Disconnect the wallet
+function disconnectWallet() {
+    connectedWalletAddress = null;
+    web3 = null;
+    counterContract = null;
+    topWalletsList.innerHTML = '';
+}
+
+// Increase the count
+async function increaseCount() {
+    try {
+        if (!connectedWalletAddress || !counterContract) {
+            console.error('Wallet not connected or contract not initialized');
+            return;
+        }
+        
+        const incrementAmount = parseInt(incrementInput.value, 10) || 1;
+        const costInWei = incrementAmount * 0.01 * 10**18;
+        await counterContract.methods.incrementBy(incrementAmount).send({ from: connectedWalletAddress, value: costInWei });
+        updateTopWallets();
+		updateWalletInfo(); // Update the wallet information
+		updateCurrentCount();
+    } catch (error) {
+        console.error('Error increasing count:', error);
+    }
+}
+
+// FROM NOW ON EXPERIMENTING
+
+// Update the connected wallet information
+function updateConnectedWalletInfo() {
+    if (connectedWalletAddress) {
+        connectedWalletElement.textContent = connectedWalletAddress;
+    } else {
+        connectedWalletElement.textContent = 'Not Connected';
+    }
+}
+
+// Fetch the current count from the contract
 async function fetchCurrentCount() {
     try {
         const count = await counterContract.methods.count().call();
         return parseInt(count);
     } catch (error) {
         console.error('Error fetching current count:', error);
-        return 0; // Return 0 if there's an error while fetching
+        return 0;
     }
 }
 
-async function updateIncrementData() {
+// Update the current count on the page
+async function updateCurrentCount() {
     try {
-        const accounts = await web3.eth.getAccounts();
-        const account = accounts[0];
-        const numIncrements = await counterContract.methods.increments(account).call();
-        incrementData[account] = parseInt(numIncrements);
-        localStorage.setItem('incrementData', JSON.stringify(incrementData));
+        const count = await fetchCurrentCount();
+        currentCountElement.textContent = count;
     } catch (error) {
-        console.error('Error updating increment data:', error);
+        console.error('Error updating current count:', error);
     }
 }
 
-async function increaseCount() {
-    try {
-        const incrementAmount = parseInt(document.getElementById('incrementInput').value, 10) || 1; // Use 1 as the default if the input is not a valid number
-        const costInWei = incrementAmount * 0.01 * 10**18; // Convert 0.01 Matic to wei
-        await counterContract.methods.incrementBy(incrementAmount).send({ from: connectedWalletAddress, value: costInWei });
-        await updateIncrementData(); // Fetch latest increment data after each increment
-        await fetchCurrentCount(); // Fetch the current count from the smart contract after each increment
-        updateCountDisplay();
-        updateWalletInfo();
-    } catch (error) {
-        console.error('Error increasing count:', error);
-    }
-}
-
-async function updateCountManually() {
-    try {
-        await fetchCurrentCount(); // Fetch the current count from the smart contract manually
-        updateCountDisplay();
-    } catch (error) {
-        console.error('Error updating count manually:', error);
-    }
-}
-
-async function withdrawFunds() {
-    try {
-        await window.ethereum.enable();
-        const accounts = await web3.eth.getAccounts();
-        const account = accounts[0];
-        await counterContract.methods.withdrawFunds().send({ from: account });
-        alert('Funds withdrawn successfully!');
-    } catch (error) {
-        console.error('Error withdrawing funds:', error);
-    }
-}
-
-async function updateCountDisplay() {
-    const countElement = document.getElementById('count');
-    countElement.textContent = currentCount;
-}
-
-function updateWalletInfo() {
-    const walletAddressElement = document.getElementById('walletAddress');
-    walletAddressElement.textContent = connectedWalletAddress;
-    const numIncrementsElement = document.getElementById('numIncrements');
-    numIncrementsElement.textContent = incrementData[connectedWalletAddress] || 0;
-}
-
-// Fetch the current count from the smart contract when the website loads
+// Fetch the current count from the contract when the website loads
 (async function () {
     try {
         const isMetaMaskConnected = window.ethereum && window.ethereum.selectedAddress;
+        await updateCurrentCount(); // Fetch and update the current count immediately
         if (isMetaMaskConnected) {
             await connectWallet();
         } else {
-            const count = await fetchCurrentCount(); // Fetch the current count from the smart contract
-            currentCount = count; // Update the currentCount variable with the fetched count
-            updateCountDisplay(); // Update the count display with the fetched count
-            updateWalletInfo(); // Update the wallet info
+            updateConnectedWalletInfo();
         }
     } catch (error) {
         console.error('Error during initialization:', error);
     }
 })();
 
-// Fetch the current count from the smart contract every 5 seconds
-setInterval(async function () {
-    try {
-        const count = await fetchCurrentCount(); // Fetch the current count from the smart contract
-        currentCount = count; // Update the currentCount variable with the fetched count
-        updateCountDisplay(); // Update the count display with the fetched count
-        updateWalletInfo(); // Update the wallet info
-    } catch (error) {
-        console.error('Error during periodic update:', error);
+// Update the wallet information displayed on the page
+async function updateWalletInfo() {
+    if (connectedWalletAddress) {
+        connectedWalletElement.textContent = connectedWalletAddress;
+        const numIncrementsElement = document.getElementById('numIncrements');
+        try {
+            const numIncrements = await counterContract.methods.increments(connectedWalletAddress).call();
+            numIncrementsElement.textContent = numIncrements;
+        } catch (error) {
+            console.error('Error fetching increment count:', error);
+            numIncrementsElement.textContent = 'N/A';
+        }
+    } else {
+        connectedWalletElement.textContent = 'Not Connected';
+        // Reset other elements
+        const numIncrementsElement = document.getElementById('numIncrements');
+        numIncrementsElement.textContent = 'N/A';
     }
-}, 5000);
+}
 
-document.getElementById('connectButton').addEventListener('click', connectWallet);
-document.getElementById('increaseButton').addEventListener('click', increaseCount);
-document.getElementById('updateCountButton').addEventListener('click', updateCountManually);
-document.getElementById('withdrawButton').addEventListener('click', withdrawFunds);
 
+
+// Fetch and update the current count every 5 seconds
+setInterval(updateCurrentCount, 5000);
