@@ -1,20 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Counter Website</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Increment Counter</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Count: <span id="count">0</span></h1>
-    <div id="walletInfo">
-        <p>Connected Wallet Address: <span id="walletAddress">Not Connected</span></p>
-        <p>Number of Increments: <span id="numIncrements">0</span></p>
-    </div>
-    <button id="connectButton">Connect Wallet</button>
-    <input type="number" id="incrementInput" placeholder="Enter the number of increments">
-    <button id="increaseButton">Increase Count</button>
-    <button id="updateCountButton">Update Count</button>
-
+    <header>
+        <h1>Increment Counter</h1>
+        <button id="connectButton">Connect Wallet</button>
+        <button id="disconnectButton">Disconnect Wallet</button>
+    </header>
+    <main>
+        <div class="wallet-info">
+            <p>Connected Wallet: <span id="connectedWallet">Not Connected</span></p>
+            <p>My Score: <span id="numIncrements">X</span></p>
+        </div>
+        <div class="increment-box">
+            <label for="incrementInput">Enter Increment Amount:</label>
+            <input type="number" id="incrementInput" min="1" value="1">
+            <button id="increaseButton">Increase Count</button>
+            <p>Current Count: <span id="currentCount">Loading...</span></p>
+            <button id="refreshCountButton">Refresh Count</button>
+        </div>
+        <div class="top-rank">
+            <h2>Top 10 Wallets</h2>
+            <ul id="topWallets"></ul>
+        </div>
+    </main>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
     <script src="app.js"></script>
 </body>
