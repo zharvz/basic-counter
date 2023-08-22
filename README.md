@@ -1,7 +1,7 @@
 # Counter Rank
 
 Counter Rank is the version 2.0 of Counter, my simple decentralized application (DApp) built on any EVM compatible blockchain that allows users to increase a counter by paying a certain amount of native EVM currency (ETH/FTM/Matic...) (in wei) for each increment. The project showcases the interaction between a web application and a smart contract on any EVM compatible network using Web3.js. Users can connect their wallets to the DApp using MetaMask and increase the counter by paying 0.01 native network token for each increment. This version also includes a rank section sorted on the count amount each wallet did and some minor tweaks.
-
+a
 Features
 
     Increment Counter: Users can increase the counter by paying 0.01 native EVM currency for each increment.
