@@ -2,6 +2,8 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #000;
+    color: white;
 }
 
 header {
@@ -26,10 +28,12 @@ main {
 
 h1 {
     margin: 0;
+    font-size: 2.5rem;
 }
 
 h2 {
     margin-top: 0;
+    font-size: 1.8rem;
 }
 
 button {
@@ -38,6 +42,12 @@ button {
     color: white;
     border: none;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
 
 input[type="number"] {
@@ -53,4 +63,29 @@ ul {
 
 li {
     margin-bottom: 0.5rem;
+}
+
+.wallet-info {
+    background-color: #222;
+    padding: 0.5rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+.wallet-info p {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.increment-box p {
+    font-size: 1rem;
+}
+
+#featuredImage {
+    max-width: 100%;
+    border: 2px solid #4caf50;
+    border-radius: 5px;
+    display: block;
+    margin: 0 auto;
+    margin-top: 1rem;
 }
