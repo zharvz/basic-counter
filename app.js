@@ -218,6 +218,11 @@ async function updateFeaturedImage() {
     }
 }
 
+// Add event listener for network change
+ethereum.on('chainChanged', () => {
+    updateFeaturedImage();
+});
 
 // Fetch and update the current count every 5 seconds
 setInterval(updateCurrentCount, 5000);
+setInterval(updateFeaturedImage, 5000);
